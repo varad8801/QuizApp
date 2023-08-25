@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz App</title>
+    <style>
+        /* Add some basic CSS styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 20px;
+        }
+
+        form {
+            margin: 10px 0;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 5px;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        div {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz App</h1>
+    
+    <h2>Create Quiz</h2>
+    <form id="createQuizForm">
+        <input type="text" id="quizCategory" placeholder="Enter quiz category" required><br>
+        <input type="number" id="numQuestions" placeholder="Enter number of questions" required><br>
+        <input type="text" id="quizTitle" placeholder="Enter quiz title" required><br>
+        <button type="submit">Create Quiz</button>
+    </form>
+    
+    <h2>Get Quiz Questions</h2>
+    <input type="number" id="quizId" placeholder="Enter quiz ID" required>
+    <button onclick="getQuiz()">Get Quiz Questions</button>
+    <div id="quizQuestions"></div>
+    
+    <h2>Submit Quiz</h2>
+    <input type="number" id="quizIdForSubmission" placeholder="Enter quiz ID" required>
+    <form id="submitQuizForm">
+        <!-- Here you can dynamically add inputs for each question -->
+    </form>
+    <button type="submit" onclick="submitQuiz()">Submit Quiz</button>
+    
+    <script>
+        function createQuiz(event) {
+            event.preventDefault();
+            const createQuizForm = document.getElementById('createQuizForm');
+            const category = document.getElementById('quizCategory').value;
+            const numQuestions = document.getElementById('numQuestions').value;
+            const title = document.getElementById('quizTitle').value;
+            fetch(`/quiz/create?category=${category}&numQ=${numQuestions}&title=${title}`, {
+                method: 'POST',
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Quiz created successfully.');
+                } else {
+                    alert('Error creating quiz.');
+                }
+            });
+        }
+        
+        function getQuiz() {
+            const quizId = document.getElementById('quizId').value;
+            fetch(`/quiz/get/${quizId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const quizQuestionsDiv = document.getElementById('quizQuestions');
+                    // Clear previous content
+                    quizQuestionsDiv.innerHTML = '';
+                    // Display each question
+                    data.forEach(question => {
+                        const questionDiv = document.createElement('div');
+                        questionDiv.innerHTML = `
+                            <p><strong>Question:</strong> ${question.questionTitle}</p>
+                            <p><strong>Options:</strong></p>
+                            <ul>
+                                <li>${question.option1}</li>
+                                <li>${question.option2}</li>
+                                <li>${question.option3}</li>
+                                <li>${question.option4}</li>
+                            </ul>
+                        `;
+                        quizQuestionsDiv.appendChild(questionDiv);
+                    });
+                });
+        }
+        
+        function submitQuiz(event) {
+            event.preventDefault();
+            const submitQuizForm = document.getElementById('submitQuizForm');
+            const quizId = document.getElementById('quizIdForSubmission').value;
+            const responses = [];
+            // Example: Loop through form elements to collect question IDs and user responses
+            submitQuizForm.querySelectorAll('input').forEach(input => {
+                const response = {
+                    questionId: input.getAttribute('data-question-id'),
+                    userAnswer: input.value,
+                };
+                responses.push(response);
+            });
+            fetch(`/quiz/submit/${quizId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(responses),
+            })
+            .then(response => response.text())
+            .then(score => {
+                alert(`Your score is: ${score}`);
+            });
+        }
+        
+        document.getElementById('createQuizForm').addEventListener('submit', createQuiz);
+        document.getElementById('submitQuizForm').addEventListener('submit', submitQuiz);
+    </script>
+</body>
+</html>

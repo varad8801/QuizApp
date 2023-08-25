@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz App - Question Controller</title>
+    <style>
+        /* Red and blue theme */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        h2 {
+            margin-top: 20px;
+        }
+
+        form {
+            margin: 10px 0;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 5px;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        div {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz App - Question Controller</h1>
+    
+    <h2>All Questions</h2>
+    <button onclick="getAllQuestions()">Get All Questions</button>
+    <div id="allQuestions"></div>
+    
+    <h2>Questions by Category</h2>
+    <input type="text" id="categoryInput" placeholder="Enter category">
+    <button onclick="getQuestionsByCategory()">Get Questions</button>
+    <div id="questionsByCategory"></div>
+    
+    <h2>Add Question</h2>
+    <form id="addQuestionForm">
+        <input type="text" id="addQuestionTitle" placeholder="Enter question title" required><br>
+        <input type="text" id="addOption1" placeholder="Enter option 1" required><br>
+        <input type="text" id="addOption2" placeholder="Enter option 2" required><br>
+        <input type="text" id="addOption3" placeholder="Enter option 3" required><br>
+        <input type="text" id="addOption4" placeholder="Enter option 4" required><br>
+        <input type="text" id="addRightAnswer" placeholder="Enter right answer" required><br>
+        <input type="text" id="addCategory" placeholder="Enter category" required><br>
+        <input type="text" id="addDifficultyLevel" placeholder="Enter difficulty level" required><br>
+        <button type="submit">Add Question</button>
+    </form>
+    
+    <h2>Update Question</h2>
+    <form id="updateQuestionForm">
+        <input type="number" id="updateQuestionId" placeholder="Enter question ID" required><br>
+        <input type="text" id="updateQuestionTitle" placeholder="Enter updated question title" required><br>
+        <input type="text" id="updateCategory" placeholder="Enter updated category" required><br>
+        <button type="submit">Update Question</button>
+    </form>
+    
+    <h2>Delete Question</h2>
+    <form id="deleteQuestionForm">
+        <input type="number" id="deleteQuestionId" placeholder="Enter question ID" required><br>
+        <button type="submit">Delete Question</button>
+    </form>
+    
+    <script>
+        // JavaScript code remains the same<script>
+        function getAllQuestions() {
+            fetch('/question/allQuestions')
+                .then(response => response.json())
+                .then(data => {
+                    const allQuestionsDiv = document.getElementById('allQuestions');
+                    // Clear previous content
+                    allQuestionsDiv.innerHTML = '';
+                    // Display each question
+                    data.forEach(question => {
+                        const questionDiv = document.createElement('div');
+                        questionDiv.innerHTML = `
+                            <p><strong>Question:</strong> ${question.questionTitle}</p>
+                            <p><strong>Options:</strong></p>
+                            <ul>
+                                <li>${question.option1}</li>
+                                <li>${question.option2}</li>
+                                <li>${question.option3}</li>
+                                <li>${question.option4}</li>
+                            </ul>
+                        `;
+                        allQuestionsDiv.appendChild(questionDiv);
+                    });
+                });
+        }
+        
+        function getQuestionsByCategory() {
+            const categoryInput = document.getElementById('categoryInput').value;
+            fetch(`/question/category/${categoryInput}`)
+                .then(response => response.json())
+                .then(data => {
+                    const questionsByCategoryDiv = document.getElementById('questionsByCategory');
+                    // Clear previous content
+                    questionsByCategoryDiv.innerHTML = '';
+                    // Display each question
+                    data.forEach(question => {
+                        const questionDiv = document.createElement('div');
+                        questionDiv.innerHTML = `
+                            <p><strong>Question:</strong> ${question.questionTitle}</p>
+                            <p><strong>Options:</strong></p>
+                            <ul>
+                                <li>${question.option1}</li>
+                                <li>${question.option2}</li>
+                                <li>${question.option3}</li>
+                                <li>${question.option4}</li>
+                            </ul>
+                        `;
+                        questionsByCategoryDiv.appendChild(questionDiv);
+                    });
+                });
+        }
+        
+        function addQuestion(event) {
+            event.preventDefault();
+            const addQuestionForm = document.getElementById('addQuestionForm');
+            const formData = new FormData(addQuestionForm);
+            const question = {};
+            formData.forEach((value, key) => {
+                question[key] = value;
+            });
+            fetch('/question/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(question),
+            })
+            .then(response => response.text())
+            .then(result => alert(result));
+        }
+        
+        function updateQuestion(event) {
+            event.preventDefault();
+            const updateQuestionForm = document.getElementById('updateQuestionForm');
+            const formData = new FormData(updateQuestionForm);
+            const question = {};
+            formData.forEach((value, key) => {
+                question[key] = value;
+            });
+            fetch('/question/update', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(question),
+            })
+            .then(response => response.text())
+            .then(result => alert(result));
+        }
+        
+        function deleteQuestion(event) {
+            event.preventDefault();
+            const deleteQuestionForm = document.getElementById('deleteQuestionForm');
+            const formData = new FormData(deleteQuestionForm);
+            const question = {};
+            formData.forEach((value, key) => {
+                question[key] = value;
+            });
+            fetch('/question/delete', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(question),
+            })
+            .then(response => response.text())
+            .then(result => alert(result));
+        }
+        
+        document.getElementById('addQuestionForm').addEventListener('submit', addQuestion);
+        document.getElementById('updateQuestionForm').addEventListener('submit', updateQuestion);
+        document.getElementById('deleteQuestionForm').addEventListener('submit', deleteQuestion);
+    </script>
+    </script>
+</body>
+</html>
